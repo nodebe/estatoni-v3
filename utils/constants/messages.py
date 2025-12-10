@@ -1,0 +1,71 @@
+from django.db.models import TextChoices
+
+
+class ResponseMessages(TextChoices):
+    # General
+    insecure_password = ("Insecure password! Must contain minimum of 8 characters, an uppercase, a lowercase, "
+                         "a number, and a symbol")
+    email_already_exist = "Account with email already exists."
+    user_email_already_verified = "Account email already verified."
+    invalid_email = "Invalid Email."
+    too_many_attempts_account_blocked = "Too many attempts. Account blocked"
+    invalid_credentials = "Invalid Email/Password."
+    reset_password_email_sent = "Instructions to reset your password have been sent to your email."
+    verification_link_sent_to_email = "Instructions for verification has been sent to your email"
+    incorrect_password = "Incorrect password."
+    successful_password_change = "Password changed successfully."
+    invalid_token_retry_login = "The token is invalid or expired. Please login again."
+    user_not_recognized = "User not recognized"
+    user_created_successfully = "User created successfully."
+    user_updated_successfully = "User updated successfully."
+    otp_sent_to_email = "An OTP has been sent to your email address."
+    invalid_or_expired_otp = "Invalid/Expired OTP."
+    valid_otp = "Valid OTP."
+    too_many_failed_otp_verification_attempts = "Too many failed OTP attempts. Request a new OTP."
+    otp_already_verified = "OTP already verified."
+    invalid_file = "A valid file is required"
+    invalid_file_extension = "File extension not supported"
+    file_too_large = "File too large"
+    invalid_action = "Invalid action."
+    invalid_input = "Invalid input."
+    update_successful = "Update Successful."
+    verification_successful = "Email Verification Successful. ✅"
+    verification_unsuccessful = "Email Verification Unsuccessful. The token is invalid or expired. ❌"
+    media_type_not_found = "Media Type not found."
+    media_not_found = "Media not found."
+    token_expired = "Not Authorized. Expired Token."
+    user_with_id_not_found = "User with id '{}' not found."
+    invalid_user_id = "Invalid user id."
+    media_deleted_successfully = "Media deleted successfully."
+    account_deleted_successfully = "Account deleted successfully."
+    invalid_token = "Invalid token."
+    possible_duplicate_error = "Possible duplicate error."
+    message_received_successfully = "Message received successfully."
+    username_is_required = "Username is required."
+    phone_number_is_required = "Phone number is required."
+    user_with_phone_number_not_found = "User with phone number '{}' not found."
+    invalid_option = "Invalid option."
+    role_already_exists = "Role '{}' already exists."
+    invalid_user_type = "Invalid user type."
+    role_not_found = "Role not found."
+    role_is_required = "Role is required."
+    no_permission_to_assign_role = "You do not have the permission to act on the role '{}'."
+    record_fetched_successfully = "Record(s) fetched successfully."
+    profile_updated_successfully = "Profile updated successfully."
+    user_acted_on_successfully = "User {} successfully."
+
+    # App Specific
+
+
+class ErrorMessages(TextChoices):
+    internal_server_error = "Internal Server Error"
+    bad_request = "Bad Request"
+    resource_not_found = "Resource Not Found"
+    permission_denied = "You do not have the permission to perform this action."
+    access_denied = "Access Denied."
+    too_many_requests = "Permission denied. Too many requests."
+    unprocessable_entity = "Unprocessable Entity"
+    success = "Success"
+    inactive_account = "Your account is inactive. Contact your administrator."
+
+    # App Specific
