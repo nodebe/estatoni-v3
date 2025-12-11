@@ -3,7 +3,7 @@ from django.db import models
 from django.db.models import Q
 from rest_framework_simplejwt.tokens import RefreshToken
 from base.models import AppDbModel, BaseModel
-from utils.constants.roles_permissions import RoleEnum
+from roles_permissions.constants import RoleEnum
 
 
 class OtpBase(AppDbModel):
@@ -28,7 +28,8 @@ class User(AbstractUser, BaseModel):
     user_id = models.CharField(max_length=50, unique=True, null=False, db_index=True)
     username = models.CharField(max_length=150, null=True, blank=True)
     email = models.EmailField(unique=True, db_index=True)
-    phone_number = models.CharField(max_length=50, blank=True, db_index=True, null=True, unique=True)
+    email_verified = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
     can_reset_password = models.BooleanField(default=False)
     profile_photo = models.OneToOneField(to="media.UploadedMedia", null=True, on_delete=models.SET_NULL,
                                          related_name="owner", blank=True)

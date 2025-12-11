@@ -9,7 +9,7 @@ from roles_permissions.models import Permission, Role
 from roles_permissions.serializers import VerySimpleRoleSerializer
 from roles_permissions.services import RoleService
 from utils.constants.messages import ResponseMessages
-from utils.constants.roles_permissions import RoleEnum, RoleHierarchy
+from roles_permissions.constants import RoleEnum, RoleHierarchy
 from utils.errors import ServerError, NotFoundError, UserError, PermissionDeniedError
 from utils.models import ModelService
 from utils.util import CustomApiRequest, get_unique_id, generate_password
@@ -115,7 +115,8 @@ class AccountService(CustomApiRequest):
                 "last_name": user.last_name,
                 "profile_photo": user.profile_photo.url if user.profile_photo else None,
                 "roles": roles,
-                "permissions": permissions
+                "permissions": permissions,
+                "is_email_verified": user.email_verified
             }
         }
 

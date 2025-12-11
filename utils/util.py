@@ -4,6 +4,8 @@ import secrets
 import time
 from datetime import datetime
 from math import ceil
+
+import phonenumbers
 from django.shortcuts import render
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.base import ContentFile
@@ -22,7 +24,7 @@ from media.models import UploadedMedia, UploadToChoices
 from utils.constants.messages import ResponseMessages
 from utils.decorators import CustomApiPermissionRequired
 from utils.errors import UserError, PermissionDeniedError
-from utils.uploaders import CloudinaryUploader, AmazonUploader
+from utils.uploaders import CloudinaryUploader
 from utils.encryption_util import AESCipher
 
 T = TypeVar("T")
@@ -222,7 +224,10 @@ class CustomApiRequest(CustomApiPermissionRequired, CustomApiResponse, DefaultPa
                 except Exception as e:
                     AppLogger.report(e)
 
-            return self.error_response(e)
+            if not settings.DEBUG:
+                return self.error_response(e)
+            else:
+                raise e
 
     def __handle_request_response(self, response_raw_data):
         response_data = response_raw_data
@@ -453,6 +458,21 @@ def check_time_expired(time_to_check, duration=10) -> bool:
     time_difference_minutes = time_difference.total_seconds() / 60
 
     return time_difference_minutes > duration
+
+
+def format_phone_number(phone_number, region="NG"):
+    try:
+        number = phonenumbers.parse(phone_number, region)
+        if not phonenumbers.is_valid_number(number):
+            return None
+
+        formatted_number = str(phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.E164))
+
+        return formatted_number
+
+    except Exception as e:
+        AppLogger.print(e)
+        return None
 
 
 class FileUploader(CustomApiRequest):

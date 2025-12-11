@@ -4,6 +4,7 @@ from base.models import BaseModel
 
 
 class MessageTypes(TextChoices):
+    signup_otp = "Signup OTP"
     password_reset = "Password Reset"
     dynamic_notification = "Dynamic Notification"
     welcome_onboarding = "Welcome Onboarding"

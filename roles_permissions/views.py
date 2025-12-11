@@ -1,7 +1,7 @@
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from utils.constants.roles_permissions import PermissionEnum
+from roles_permissions.constants import PermissionEnum
 from roles_permissions.serializers import CreateEditRoleSerializer, RoleSerializer
 from roles_permissions.services import RoleService, PermissionService
 from utils.util import CustomApiRequest

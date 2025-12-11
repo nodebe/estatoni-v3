@@ -8,7 +8,7 @@ from account.v1.serializers.user import UserSerializer, UpdateUserSerializer
 from account.v1.services.user import UserService, AccountService
 from api.serializers.others import ActivateDeactivateSerializer
 from utils.constants.messages import ResponseMessages
-from utils.constants.roles_permissions import PermissionEnum
+from roles_permissions.constants import PermissionEnum
 from utils.util import CustomApiRequest
 
 

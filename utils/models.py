@@ -1,4 +1,4 @@
-from errors import ServerError
+from .errors import ServerError
 from utils.util import CustomApiRequest
 from django.core.cache import cache
 

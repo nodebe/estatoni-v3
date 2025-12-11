@@ -194,3 +194,15 @@ class RoleService(CustomApiRequest):
         queryset = Role.available_objects.prefetch_related("permissions").filter(q).order_by("name")
 
         return queryset
+
+    def fetch_single_by_label(self, role_label):
+        def fetch():
+            role = Role.available_objects.prefetch_related("permissions").filter(label=role_label).first()
+
+            if not role:
+                raise NotFoundError(ResponseMessages.role_not_found)
+
+            return role
+
+        cache_key = self.generate_cache_key(role_label, model=Role)
+        return cache.get_or_set(cache_key, fetch)

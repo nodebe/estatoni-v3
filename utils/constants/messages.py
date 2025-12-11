@@ -5,9 +5,12 @@ class ResponseMessages(TextChoices):
     # General
     insecure_password = ("Insecure password! Must contain minimum of 8 characters, an uppercase, a lowercase, "
                          "a number, and a symbol")
+    logout_successful = "Logout successful."
     email_already_exist = "Account with email already exists."
+    phone_already_exist = "Account with phone number already exists."
     user_email_already_verified = "Account email already verified."
     invalid_email = "Invalid Email."
+    invalid_phone_number = "Invalid Phone Number."
     too_many_attempts_account_blocked = "Too many attempts. Account blocked"
     invalid_credentials = "Invalid Email/Password."
     reset_password_email_sent = "Instructions to reset your password have been sent to your email."

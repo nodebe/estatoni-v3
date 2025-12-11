@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from models import Permission
+from .models import Permission
 
 
 class PermissionSerializer(serializers.ModelSerializer):

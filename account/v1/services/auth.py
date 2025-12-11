@@ -2,25 +2,107 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
 from django.db.models import TextChoices
-from rest_framework_simplejwt.tokens import RefreshToken
-from notification.tasks import send_password_reset
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from notification.tasks import send_password_reset, send_signup_otp
+from roles_permissions.constants import RoleEnum
+from roles_permissions.services import RoleService
 from utils.constants.messages import ResponseMessages, ErrorMessages
 from utils.errors import UserError, AccessDeniedError, NotAuthorizedError
 from utils.models import ModelService
 from .user import AccountService
-from utils.util import CustomApiRequest, generate_otp, check_time_expired
-from ...models import Otp
+from utils.util import CustomApiRequest, generate_otp, check_time_expired, get_unique_id
+from ...models import Otp, User
 from django.utils import timezone
 
 
 class OTPIntent(TextChoices):
     reset_password = "Reset Password"
+    signup_otp = "Signup OTP"
 
 
 class AuthService(CustomApiRequest):
 
     def __init__(self, request):
         super().__init__(request)
+        self.model_service = ModelService(request)
+
+    def send_otp(self, payload, otp_intent=None):
+        email = payload.get("email")
+        account_service = AccountService(self.request)
+
+        user_exists, user = account_service.check_email_exists(email)
+
+        if user_exists:
+            user_email_verified = user.email_verified
+            otp_service = OTPService(self.request)
+
+            if otp_intent == OTPIntent.signup_otp and not user_email_verified or otp_intent == OTPIntent.reset_password:
+                otp = otp_service.get_or_set_user_otp(user)
+            else:
+                otp = None
+
+            if otp_intent == OTPIntent.reset_password:
+                _ = send_password_reset.delay(email=email, first_name=user.first_name, otp=otp)
+            elif otp_intent == OTPIntent.signup_otp:
+                if not user_email_verified:
+                    _ = send_signup_otp.delay(email=email, first_name=user.first_name, otp=otp)
+
+        return ResponseMessages.otp_sent_to_email
+
+    def register(self, payload):
+        phone_number = payload.get("phone_number")
+
+        account_service = AccountService(self.request)
+        account = account_service.fetch_user_by_phone_number(phone_number, is_fresh=True)
+
+        if account:
+            raise UserError(ResponseMessages.phone_already_exist)
+
+        payload["user_id"] = get_unique_id(length=10)
+
+        user = self.model_service.create_model_instance(model=User, payload=payload)
+
+        # Send OTP to email
+        otp_service = OTPService(self.request)
+        otp = otp_service.get_or_set_user_otp(user)
+
+        #  Setup User Roles and Permissions
+        role_service = RoleService(self.request)
+        role = role_service.fetch_single_by_label(role_label=RoleEnum.user.label)
+
+        user.roles.add(role.id)
+
+        _ = send_signup_otp.delay(email=user.email, first_name=user.first_name, otp=otp)
+
+        return ResponseMessages.otp_sent_to_email
+
+    def logout(self, payload):
+        auth_header = self.request.headers.get("Authorization")
+        refresh_token = payload.get("refresh_token")
+        # TODO: Fix the logout
+
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            access_token_str = auth_header.split(" ")[1]
+            access_token = AccessToken(access_token_str)
+
+            token_obj, created = OutstandingToken.objects.get_or_create(
+                user=self.auth_user,
+                jti=access_token["jti"],
+                token=access_token_str,
+                expires_at=timezone.make_aware(access_token["exp"]),
+            )
+
+            BlacklistedToken.objects.get_or_create(token=token_obj)
+
+            return ResponseMessages.logout_successful
+
+        except TokenError:
+            raise UserError(ResponseMessages.invalid_token)
 
     def refresh_token(self, payload):
         token = payload.get('refresh_token')
@@ -92,6 +174,16 @@ class AuthService(CustomApiRequest):
                 if otp_intent == OTPIntent.reset_password:
                     user.can_reset_password = True
                     user.save(update_fields=["can_reset_password"])
+                    return ResponseMessages.valid_otp
+
+                elif otp_intent == OTPIntent.signup_otp:
+                    if not user.email_verified:
+                        user.email_verified = True
+                        user.save(update_fields=["email_verified"])
+
+                        return account_service.get_user_data(user)
+                    else:
+                        raise UserError(ResponseMessages.user_email_already_verified)
 
                 return ResponseMessages.valid_otp
 
@@ -101,6 +193,9 @@ class AuthService(CustomApiRequest):
 
     def verify_password_otp(self, payload):
         return self.verify_otp_via_email(payload, otp_intent=OTPIntent.reset_password)
+
+    def verify_register_otp(self, payload):
+        return self.verify_otp_via_email(payload, otp_intent=OTPIntent.signup_otp)
 
     def login(self, payload):
         username = payload.get("email").lower()
@@ -131,6 +226,9 @@ class AuthService(CustomApiRequest):
             cache.set(login_count_cache_key, login_count, timeout=1200)
 
             raise UserError(message=ResponseMessages.invalid_credentials)
+
+        user.last_login = timezone.now()
+        user.save(update_fields=["last_login"])
 
         account_service = AccountService(request=self.request)
 

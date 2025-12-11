@@ -15,7 +15,7 @@ class VerySimpleProfileSerializer(serializers.ModelSerializer):
 
 
 base_profile_serializer_fields = ['user_id', 'first_name', 'last_name', 'phone_number', 'email', "profile_photo",
-                                  "roles", "created_at", "created_by", "components", "states", "lgas", "is_active"]
+                                  "roles", "created_at", "created_by", "is_active"]
 
 
 class BaseProfileSerializer(serializers.ModelSerializer):
@@ -32,11 +32,12 @@ class ProfileSerializer(BaseProfileSerializer):
     updated_by = VerySimpleProfileSerializer(read_only=True)
     deactivated_by = VerySimpleProfileSerializer(read_only=True)
     roles = SimpleRoleSerializer(many=True, read_only=True)
+    is_email_verified = serializers.BooleanField(read_only=True, source="email_verified")
 
     class Meta:
         model = User
         fields = base_profile_serializer_fields + ["is_active", "profile_photo_id", "updated_by", "updated_at",
-                                                   "deactivated_by", "deactivated_at"]
+                                                   "deactivated_by", "deactivated_at", "is_email_verified"]
 
 
 class SimpleProfileSerializer(BaseProfileSerializer):
