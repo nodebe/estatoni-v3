@@ -1,7 +1,6 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework.generics import ListAPIView, UpdateAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-
 from account.v1.serializers.profile import SimpleProfileSerializer, ProfileSerializer
 from roles_permissions.serializers import VerySimpleRoleSerializer
 from account.v1.serializers.user import UserSerializer, UpdateUserSerializer

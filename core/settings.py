@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "base",
     "crm",
     'media',
+    'payment',
     "notification",
     "location",
 ]
@@ -288,3 +289,6 @@ EMAIL_PORT = os.getenv("EMAIL_PORT")
 # Prembly Config
 PREMBLY_API_KEY = os.getenv("PREMBLY_API_KEY", "")
 PREMBLY_APP_ID = os.getenv("PREMBLY_APP_ID", "")
+
+PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
+PAYSTACK_PUBLIC_KEY = os.getenv("PAYSTACK_PUBLIC_KEY")

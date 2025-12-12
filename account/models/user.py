@@ -72,6 +72,7 @@ class User(AbstractUser, BaseModel):
                                                default=VerificationStatusOption.not_started)
     kyc_verification_response_data = models.JSONField(null=True, blank=True)
     kyc_verification_comment = models.TextField(null=True, blank=True)
+    kyc_verified_at = models.DateTimeField(null=True, blank=True)
     language = models.CharField(max_length=10, default=LanguageOptions.english, choices=LanguageOptions.choices)
     country = models.ForeignKey("location.Country", on_delete=models.SET_NULL, null=True)
 
@@ -144,3 +145,11 @@ class KYCVerificationData(BaseModel):
     city_of_residence = models.CharField(max_length=100, null=True, blank=True)
     image_string = models.TextField(null=True, blank=True)
     status = models.BooleanField(default=False)
+
+
+class EstateDeveloperCompany(BaseModel):
+    name = models.CharField(max_length=255, null=False, unique=True)
+    cac_number = models.CharField(max_length=255, null=False, unique=True)
+    business_email = models.EmailField(null=False, blank=False, unique=True)
+    phone_number = models.CharField(max_length=255, null=False, unique=True)
+    website = models.URLField(null=False, blank=False, unique=True)

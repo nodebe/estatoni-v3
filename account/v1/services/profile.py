@@ -1,5 +1,5 @@
 from django.core.cache import cache
-
+from django.utils import timezone
 from account.models import VerificationStatusOption, KYCVerificationService, KYCVerificationServiceOptions, \
     IDTypeLabelOptions, KYCVerificationData, IDType
 from account.tasks import background_verify_user
@@ -8,7 +8,7 @@ from utils.constants.messages import ResponseMessages
 from utils.errors import UserError
 from utils.models import ModelService
 from utils.third_party_connection import PremblyAPIService
-from utils.util import CustomApiRequest, AppLogger
+from utils.util import CustomApiRequest
 
 
 class KYCService(CustomApiRequest):
@@ -20,6 +20,7 @@ class KYCService(CustomApiRequest):
         return {
             "status": self.auth_user.kyc_verification_status,
             "comment": self.auth_user.kyc_verification_comment,
+            "verified_at": self.auth_user.kyc_verified_at
         }
 
     def collect_data(self, payload):
@@ -63,6 +64,7 @@ class KYCService(CustomApiRequest):
         return len(common_names) >= 2
 
     def verify_user(self, user, verification_data, response_data):
+        # TODO: Hash the id_number
         verification_data["user"] = user
         kyc_verification_data = self.model_service.create_model_instance(model=KYCVerificationData,
                                                                          payload=verification_data)
@@ -82,8 +84,9 @@ class KYCService(CustomApiRequest):
             user.kyc_verification_comment = response_data.get("detail", "Verification Complete")
 
         user.kyc_verification_response_data = response_data
+        user.kyc_verified_at = timezone.now()
         user.save(update_fields=["kyc_verification_status", "kyc_verification_response_data",
-                                 "kyc_verification_comment"])
+                                 "kyc_verification_comment", "kyc_verified_at"])
 
         return True
 

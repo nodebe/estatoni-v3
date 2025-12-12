@@ -163,3 +163,68 @@ class PremblyAPIService(APIService):
             return None, response_data
 
         return None, response_data
+
+
+class PaystackAPIService(APIService):
+    def __init__(self):
+        self.api_key = settings.PAYSTACK_SECRET_KEY
+        super().__init__(api_key=self.api_key)
+        self.base_url = "https://api.paystack.co"
+
+    def get_headers(self):
+        return {
+            "Authorization": f"Bearer {self.api_key}"
+        }
+
+    def verify_transaction(self, reference):
+        endpoint = f"/transaction/verify/{reference}"
+
+        response = self.make_request(method=HTTPMethods.get, endpoint=endpoint)
+
+        return response
+
+    def create_transfer_recipient(self, payload):
+        endpoint = f"/transferrecipient"
+
+        data = {
+            "type": "nuban",
+            "name": payload.get("name"),
+            "account_number": payload.get("account_number"),
+            "bank_code": payload.get("bank_code"),
+            "currency": "NGN"
+        }
+
+        response = self.make_request(method=HTTPMethods.post, endpoint=endpoint, data=data)
+
+        return response
+
+    def initiate_transfer(self, recipient, amount, reference, **kwargs):
+        endpoint = "/transfer"
+
+        amount = float(amount * 100)
+
+        data = {
+            "source": "balance",
+            "amount": amount,
+            "recipient": recipient,
+            "reference": reference,
+            "reason": kwargs.get("reason", "")
+        }
+
+        response = self.make_request(method=HTTPMethods.post, endpoint=endpoint, data=data)
+
+        return response
+
+    def fetch_bank_list(self):
+        endpoint = f"/bank"
+
+        response = self.make_request(method=HTTPMethods.get, endpoint=endpoint)
+
+        return response
+
+    def verify_account_number(self, account_number, bank_code):
+        endpoint = f"/bank/resolve?account_number={account_number}&bank_code={bank_code}"
+
+        response = self.make_request(method=HTTPMethods.get, endpoint=endpoint)
+
+        return response

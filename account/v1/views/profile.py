@@ -48,6 +48,7 @@ class PasswordResetAPIView(CreateAPIView, CustomApiRequest):
         service = AccountService(request)
         return self.process_request(request, service.reset_password)
 
+
 @extend_schema(tags=["Profile KYC"])
 class ProfileKYCAPIView(RetrieveUpdateAPIView, CustomApiRequest):
     permission_classes = [IsAuthenticated]

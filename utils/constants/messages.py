@@ -63,6 +63,11 @@ class ResponseMessages(TextChoices):
     kyc_data_submitted_successfully = "KYC data submitted successfully."
     kyc_status_already_verb = "KYC status already {}."
 
+     # Payments
+    max_accounts_exceeded = "Max number of accounts exceeded."
+    account_details_not_exist = "Account details not found."
+    insufficient_balance = "Insufficient balance."
+
 
 class ErrorMessages(TextChoices):
     internal_server_error = "Internal Server Error"
