@@ -6,6 +6,27 @@ from base.models import AppDbModel, BaseModel
 from roles_permissions.constants import RoleEnum
 
 
+class LanguageOptions(models.TextChoices):
+    english = 'en'
+
+
+class IDTypeLabelOptions(models.TextChoices):
+    bvn = "bvn"
+    nin = "nin"
+
+
+class VerificationStatusOption(models.TextChoices):
+    not_started = "Not Started"
+    processing = "Processing"
+    pending = "Pending"
+    verified = "Verified"
+    failed = "Failed"
+
+
+class KYCVerificationServiceOptions(models.TextChoices):
+    prembly = "Prembly"
+
+
 class OtpBase(AppDbModel):
     otp = models.CharField(max_length=255, null=False)
     otp_requested_at = models.DateTimeField(null=False)
@@ -24,6 +45,11 @@ class Otp(OtpBase):
         return self.user.email
 
 
+class IDType(BaseModel):
+    name = models.CharField(max_length=255, null=False, unique=True)
+    label = models.CharField(max_length=255, null=False, unique=True, choices=IDTypeLabelOptions.choices)
+
+
 class User(AbstractUser, BaseModel):
     user_id = models.CharField(max_length=50, unique=True, null=False, db_index=True)
     username = models.CharField(max_length=150, null=True, blank=True)
@@ -35,6 +61,14 @@ class User(AbstractUser, BaseModel):
                                          related_name="owner", blank=True)
     roles = models.ManyToManyField("roles_permissions.Role", related_query_name="roles", blank=True)
     permissions = models.ManyToManyField("roles_permissions.Permission", related_query_name="permissions", blank=True)
+    id_type = models.ForeignKey("IDType", on_delete=models.SET_NULL, null=True)
+    id_number = models.CharField(max_length=50, null=True, blank=True)
+    dob = models.DateField(null=True, blank=True)
+    kyc_verification_status = models.CharField(max_length=30, choices=VerificationStatusOption.choices,
+                                               default=VerificationStatusOption.not_started)
+    kyc_verification_data = models.JSONField(null=True, blank=True)
+    kyc_verification_comment = models.TextField(null=True, blank=True)
+    language = models.CharField(max_length=10, default=LanguageOptions.english, choices=LanguageOptions.choices)
 
     def __str__(self):
         return str(f"{self.first_name}::{self.user_id}")
@@ -85,3 +119,23 @@ class ApiRequestLogger(AppDbModel):
 
     class Meta:
         verbose_name_plural = "API Request Logs"
+
+
+class KYCVerificationService(BaseModel):
+    name = models.CharField(max_length=255, choices=KYCVerificationServiceOptions.choices, null=False, unique=True)
+
+
+class KYCVerificationData(BaseModel):
+    user = models.ForeignKey("account.User", on_delete=models.CASCADE, related_name="+")
+    first_name = models.CharField(max_length=255, null=False, blank=True)
+    last_name = models.CharField(max_length=255, null=True, blank=True)
+    dob = models.CharField(max_length=50, null=True, blank=True)
+    phone_number = models.CharField(max_length=255, null=False, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    gender = models.CharField(max_length=10, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    state_of_origin = models.CharField(max_length=100, null=True, blank=True)
+    state_of_residence = models.CharField(max_length=100, null=True, blank=True)
+    city_of_residence = models.CharField(max_length=100, null=True, blank=True)
+    image_string = models.TextField(null=True, blank=True)
+    status = models.BooleanField(default=False)

@@ -58,6 +58,7 @@ class ResponseMessages(TextChoices):
     user_acted_on_successfully = "User {} successfully."
 
     # App Specific
+    verification_service_issues = "Internal verification service issues."
 
 
 class ErrorMessages(TextChoices):

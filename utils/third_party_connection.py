@@ -1,6 +1,8 @@
 from abc import abstractmethod, ABC
 import requests
 import json
+
+from django.conf import settings
 from django.db.models import TextChoices
 from utils.errors import ServerError
 from utils.util import AppLogger
@@ -65,10 +67,90 @@ class APIService(ABC):
         )
 
         if response.ok:
-            return True, response.json()
+            return True, response
         else:
-            return False, response.json()
+            return False, response
 
     @abstractmethod
     def get_headers(self):
         pass
+
+
+class PremblyAPIService(APIService):
+    def __init__(self, api_key=settings.PREMBLY_API_KEY):
+        self.base_url = "https://api.prembly.com/verification"
+        self.api_key = api_key
+
+    def get_headers(self):
+        return {
+            "x-api-key": f"Bearer {self.api_key}",
+            "app-id": settings.PREMBLY_APP_ID,
+        }
+
+    def verify_nin(self, id_number):
+        # Test number: 12345678901
+        data = {
+            "number": id_number
+        }
+
+        status, response = self.make_request(
+            endpoint="/vnin",
+            method=HTTPMethods.post,
+            data=data
+        )
+
+        response_data = response.json().get("data")
+
+        if status:
+            verified_data = response_data.get("data")
+            verification_data = {
+                "first_name": verified_data.get("firstname", ""),
+                "last_name": verified_data.get("surname", ""),
+                "dob": verified_data.get("birthdate", ""),
+                "phone_number": verified_data.get("telephoneno", ""),
+                "email": verified_data.get("email", ""),
+                "gender": verified_data.get("gender", ""),
+                "address": verified_data.get("residence_address", ""),
+                "state_of_origin": verified_data.get("self_origin_state", ""),
+                "state_of_residence": verified_data.get("residence_state", ""),
+                "city_of_residence": verified_data.get("residence_town", ""),
+                "image_string": verified_data.get("photo", "")
+            }
+
+            return verification_data, response_data
+
+        return None, response_data
+
+    def verify_bvn(self, id_number):
+        # Test number: 54651333604
+        data = {
+            "number": id_number
+        }
+
+        status, response = self.make_request(
+            endpoint="/bvn",
+            method=HTTPMethods.post,
+            data=data
+        )
+
+        response_data = response.json()
+
+        if status:
+            verified_data = response_data.get("data")
+            verification_data = {
+                "first_name": verified_data.get("firstName", ""),
+                "last_name": verified_data.get("lastName", ""),
+                "dob": verified_data.get("dateOfBirth", ""),
+                "phone_number": verified_data.get("phoneNumber1") or verified_data.get("phoneNumber2"),
+                "email": verified_data.get("email", ""),
+                "gender": verified_data.get("gender", ""),
+                "address": verified_data.get("residentialAddress", ""),
+                "state_of_origin": verified_data.get("stateOfOrigin", ""),
+                "state_of_residence": verified_data.get("stateOfResidence", ""),
+                "city_of_residence": "",
+                "image_string": verified_data.get("base64Image", "")
+            }
+
+            return verification_data, response_data
+
+        return None, response_data

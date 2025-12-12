@@ -284,3 +284,7 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_SSL = True
 EMAIL_PORT = os.getenv("EMAIL_PORT")
+
+# Prembly Config
+PREMBLY_API_KEY = os.getenv("PREMBLY_API_KEY", "")
+PREMBLY_APP_ID = os.getenv("PREMBLY_APP_ID", "")

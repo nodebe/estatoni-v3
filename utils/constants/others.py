@@ -25,3 +25,9 @@ class ActivityTypeVerb(TextChoices):
     verify = "verified"
     deactivate = "deactivated"
     application = "applied"
+
+
+class CeleryTaskQueue(TextChoices):
+    email = "email"
+    logging = "logging"
+    default = "default"

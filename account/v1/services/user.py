@@ -46,13 +46,16 @@ class AccountService(CustomApiRequest):
 
         return user_update
 
-    def fetch_user_by_user_id(self, user_id):
+    def fetch_user_by_user_id(self, user_id, is_background=False):
         def __do_fetch_single():
             try:
                 user = User.objects.get(user_id=user_id)
                 return user
 
             except User.DoesNotExist:
+                if is_background:
+                    return None
+
                 raise NotFoundError(ResponseMessages.user_with_id_not_found.format(user_id))
 
             except Exception as e:

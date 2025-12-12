@@ -45,3 +45,11 @@ class PasswordResetAPIView(CreateAPIView, CustomApiRequest):
     def post(self, request, *args, **kwargs):
         service = AccountService(request)
         return self.process_request(request, service.reset_password)
+
+
+class ProfileKYCAPIView(CreateAPIView, CustomApiRequest):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(tags=["Profile KYC"])
+    def post(self, request, *args, **kwargs):
+        service = KYCService(request)

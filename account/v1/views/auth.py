@@ -88,7 +88,7 @@ class CustomTokenRefreshAPIView(CreateAPIView, CustomApiRequest):
         return self.process_request(request, service.refresh_token)
 
 
-class CustomBlacklistTokenAPIView(CreateAPIView, CustomApiRequest):
+class LogoutAPIView(CreateAPIView, CustomApiRequest):
     serializer_class = RefreshTokenSerializer
     permission_classes = [IsAuthenticated]
 

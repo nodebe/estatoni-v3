@@ -3,7 +3,7 @@ from rest_framework_simplejwt.views import TokenBlacklistView
 
 from account.v1.views.auth import (LoginAPIView, ForgotPasswordAPIView, VerifyPasswordOTPAPIView, RegisterAPIView,
                                    PasswordResetOTPAPIView, CustomTokenRefreshAPIView, VerifyRegisterOTPAPIView,
-                                   ResendRegisterOTPAPIView, CustomBlacklistTokenAPIView)
+                                   ResendRegisterOTPAPIView, LogoutAPIView)
 
 urlpatterns = [
     path("register", RegisterAPIView.as_view(), name='register'),
@@ -14,5 +14,5 @@ urlpatterns = [
     path("password/reset", PasswordResetOTPAPIView.as_view(), name='reset_password'),
     path("password/verify-otp", VerifyPasswordOTPAPIView.as_view(), name='verify_password_otp'),
     path('token/refresh', CustomTokenRefreshAPIView.as_view(), name='token_refresh'),
-    path('logout', CustomBlacklistTokenAPIView.as_view(), name='logout'),
+    path('logout', LogoutAPIView.as_view(), name='logout'),
 ]
