@@ -48,6 +48,10 @@ class Otp(OtpBase):
 class IDType(BaseModel):
     name = models.CharField(max_length=255, null=False, unique=True)
     label = models.CharField(max_length=255, null=False, unique=True, choices=IDTypeLabelOptions.choices)
+    country = models.ForeignKey("location.Country", on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.name
 
 
 class User(AbstractUser, BaseModel):
@@ -62,13 +66,14 @@ class User(AbstractUser, BaseModel):
     roles = models.ManyToManyField("roles_permissions.Role", related_query_name="roles", blank=True)
     permissions = models.ManyToManyField("roles_permissions.Permission", related_query_name="permissions", blank=True)
     id_type = models.ForeignKey("IDType", on_delete=models.SET_NULL, null=True)
-    id_number = models.CharField(max_length=50, null=True, blank=True)
+    id_number = models.CharField(max_length=50, null=True, blank=True, unique=True)
     dob = models.DateField(null=True, blank=True)
     kyc_verification_status = models.CharField(max_length=30, choices=VerificationStatusOption.choices,
                                                default=VerificationStatusOption.not_started)
-    kyc_verification_data = models.JSONField(null=True, blank=True)
+    kyc_verification_response_data = models.JSONField(null=True, blank=True)
     kyc_verification_comment = models.TextField(null=True, blank=True)
     language = models.CharField(max_length=10, default=LanguageOptions.english, choices=LanguageOptions.choices)
+    country = models.ForeignKey("location.Country", on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return str(f"{self.first_name}::{self.user_id}")

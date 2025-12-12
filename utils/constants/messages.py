@@ -59,6 +59,9 @@ class ResponseMessages(TextChoices):
 
     # App Specific
     verification_service_issues = "Internal verification service issues."
+    names_do_not_match = "Your name did not match the one on your verification data"
+    kyc_data_submitted_successfully = "KYC data submitted successfully."
+    kyc_status_already_verb = "KYC status already {}."
 
 
 class ErrorMessages(TextChoices):

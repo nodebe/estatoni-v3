@@ -36,7 +36,6 @@ def make_http_request(method, url, headers=None, data=None, json_data=None, para
         if json_data is not None:
             response = request_method(url, headers=headers, json=json_data)
         elif data is not None:
-            data = json.dumps(data)
             response = request_method(url, headers=headers, data=data)
         elif params is not None:
             data = json.dumps(data)
@@ -51,9 +50,9 @@ def make_http_request(method, url, headers=None, data=None, json_data=None, para
 
 
 class APIService(ABC):
-    def __init__(self, api_key=""):
+    def __init__(self, api_key="", base_url=""):
         self.api_key = api_key
-        self.base_url = None
+        self.base_url = base_url
         self.headers = self.get_headers()
 
     def make_request(self, endpoint, method, data=None, json_data=None, params=None, save_data=True):
@@ -78,19 +77,19 @@ class APIService(ABC):
 
 class PremblyAPIService(APIService):
     def __init__(self, api_key=settings.PREMBLY_API_KEY):
-        self.base_url = "https://api.prembly.com/verification"
-        self.api_key = api_key
+        base_url = "https://api.prembly.com/verification"
+        super().__init__(api_key=api_key, base_url=base_url)
 
     def get_headers(self):
         return {
-            "x-api-key": f"Bearer {self.api_key}",
+            "x-api-key": f"{self.api_key}",
             "app-id": settings.PREMBLY_APP_ID,
         }
 
     def verify_nin(self, id_number):
         # Test number: 12345678901
         data = {
-            "number": id_number
+            "number_nin": id_number
         }
 
         status, response = self.make_request(
@@ -99,10 +98,12 @@ class PremblyAPIService(APIService):
             data=data
         )
 
-        response_data = response.json().get("data")
+        response_data = response.json()
 
-        if status:
-            verified_data = response_data.get("data")
+        response_code = response_data.get("response_code")
+
+        if response_code == "00":
+            verified_data = response_data.get("nin_data")
             verification_data = {
                 "first_name": verified_data.get("firstname", ""),
                 "last_name": verified_data.get("surname", ""),
@@ -118,6 +119,9 @@ class PremblyAPIService(APIService):
             }
 
             return verification_data, response_data
+
+        elif response_code == "01":
+            return None, response_data
 
         return None, response_data
 
@@ -135,7 +139,9 @@ class PremblyAPIService(APIService):
 
         response_data = response.json()
 
-        if status:
+        response_code = response_data.get("response_code")
+
+        if response_code == "00":
             verified_data = response_data.get("data")
             verification_data = {
                 "first_name": verified_data.get("firstName", ""),
@@ -152,5 +158,8 @@ class PremblyAPIService(APIService):
             }
 
             return verification_data, response_data
+
+        elif response_code == "01":
+            return None, response_data
 
         return None, response_data

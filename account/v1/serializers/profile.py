@@ -1,7 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from password_validator import PasswordValidator
 from rest_framework import serializers
-from account.models import User
+from account.models import User, IDType
 from roles_permissions.serializers import SimpleRoleSerializer
 from media.models import UploadedMedia
 from utils.constants.messages import ResponseMessages
@@ -66,3 +66,16 @@ class PasswordResetSerializer(serializers.Serializer):
         data["new_password"] = make_password(password)
 
         return data
+
+
+class CollectKYCSerializer(serializers.Serializer):
+    id_type_id = serializers.PrimaryKeyRelatedField(source="id_type", queryset=IDType.objects.all())
+    id_number = serializers.CharField()
+    dob = serializers.DateField()
+
+
+class IdTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = IDType
+        fields = ["id", "name"]

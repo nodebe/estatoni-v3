@@ -6,7 +6,6 @@ from django.utils import timezone
 from account.models import User
 from account.v1.serializers.profile import SimpleProfileSerializer
 from roles_permissions.models import Permission, Role
-from roles_permissions.serializers import VerySimpleRoleSerializer
 from roles_permissions.services import RoleService
 from utils.constants.messages import ResponseMessages
 from roles_permissions.constants import RoleEnum, RoleHierarchy
@@ -60,6 +59,9 @@ class AccountService(CustomApiRequest):
 
             except Exception as e:
                 raise ServerError(error=e, error_position="UserService.fetch_user_by_user_id")
+
+        if is_background:
+            return __do_fetch_single()
 
         cache_key = self.generate_cache_key(user_id, model=User)
         return cache.get_or_set(cache_key, __do_fetch_single)

@@ -3,6 +3,7 @@ from password_validator import PasswordValidator
 from rest_framework import serializers
 from account.models import User
 from account.v1.services.user import UserService, AccountService
+from location.v1.models import Country
 from utils.constants.messages import ResponseMessages
 from utils.errors import UserError
 from utils.util import format_phone_number
@@ -47,9 +48,11 @@ class RefreshTokenSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    country_id = serializers.PrimaryKeyRelatedField(source="country", queryset=Country.objects.all())
+
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email", "phone_number", "password"]
+        fields = ["first_name", "last_name", "email", "phone_number", "password", "country_id"]
 
     def validate_email(self, value):
         account_service = AccountService(None)
